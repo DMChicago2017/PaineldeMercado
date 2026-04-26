@@ -614,7 +614,7 @@ async function fetchYahoo(symbol) {
 
   const last = series[series.length - 1];
   const price = meta.regularMarketPrice ?? last.c;
-  const prevClose = meta.chartPreviousClose ?? meta.previousClose ?? series[series.length - 2]?.c ?? price;
+  const prevClose = series[series.length - 2]?.c ?? price;
 
   const now = last.t;
   const findBefore = (msAgo) => {
