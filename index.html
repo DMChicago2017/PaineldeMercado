@@ -500,6 +500,24 @@ footer a:hover { color: var(--accent); }
   </div>
 </section>
 
+<section>
+  <div class="section-header">
+    <h2>Fundos Imobiliários</h2>
+    <span class="meta">B3 · FII</span>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr>
+        <th>Ticker</th><th style="text-align:left">Nome</th>
+        <th>Preço (R$)</th><th>Dia %</th><th>Semana %</th><th>Mês %</th><th>Ano %</th>
+        <th class="spark">30 dias</th>
+      </tr></thead>
+      <tbody id="tbody-fii"></tbody>
+    </table>
+  </div>
+</section>
+
+
 <footer>
   <span>Fontes: Yahoo Finance · Banco Central do Brasil</span>
   <span>Cotações com possível defasagem · Não constitui recomendação de investimento</span>
@@ -511,6 +529,7 @@ footer a:hover { color: var(--accent); }
 const TICKERS = {
   indices: [
     { sym: '^BVSP',  name: 'Ibovespa',     yahoo: '^BVSP'  },
+    { sym: 'IFIX',   name: 'IFIX',         yahoo: 'IFIX.SA' },
     { sym: '^GSPC',  name: 'S&P 500',      yahoo: '^GSPC'  },
     { sym: '^IXIC',  name: 'Nasdaq Comp.', yahoo: '^IXIC'  },
     { sym: '^DJI',   name: 'Dow Jones',    yahoo: '^DJI'   },
@@ -528,12 +547,18 @@ const TICKERS = {
     { sym: 'NVDA', name: 'NVIDIA',    yahoo: 'NVDA' },
   ],
   etf: [
-    { sym: 'BOVA11', name: 'Ibovespa ETF (BR)',         yahoo: 'BOVA11.SA' },
-    { sym: 'VT',     name: 'Vanguard Total World',      yahoo: 'VT'        },
-    { sym: 'BNDW',   name: 'Vanguard Total World Bond', yahoo: 'BNDW'      },
-    { sym: 'VNQ',    name: 'Vanguard Real Estate',      yahoo: 'VNQ'       },
+    { sym: 'BOVA11', name: 'Ibovespa ETF (BR)',             yahoo: 'BOVA11.SA' },
+    { sym: 'VT',     name: 'Vanguard Total World',          yahoo: 'VT'        },
+    { sym: 'BNDW',   name: 'Vanguard Total World Bond',     yahoo: 'BNDW'      },
+    { sym: 'VNQ',    name: 'Vanguard Real Estate',          yahoo: 'VNQ'       },
+    { sym: 'VWRA',   name: 'Vanguard FTSE All-World (IE)',  yahoo: 'VWRA.L'    },
+    { sym: 'AGGU',   name: 'iShares Global Agg Bond Hdg (IE)', yahoo: 'AGGU.L' },
+  ],
+  fii: [
+    { sym: 'KFOF11', name: 'Kinea FoF (FII de FIIs)', yahoo: 'KFOF11.SA' },
   ],
 };
+;
 
 const fmt = {
   num(v, d = 2) {
@@ -701,23 +726,26 @@ function renderError(item) {
 }
 
 function buildSkeletons() {
-  const sections = [
+   const sections = [
     ['tbody-indices', TICKERS.indices],
     ['tbody-br',      TICKERS.br],
     ['tbody-us',      TICKERS.us],
     ['tbody-etf',     TICKERS.etf],
+    ['tbody-fii',     TICKERS.fii],
   ];
+
   for (const [id, list] of sections) {
     document.getElementById(id).innerHTML = list.map(it => loadingRow(it)).join('');
   }
 }
 
 async function loadAssets() {
-  const all = [
+    const all = [
     ...TICKERS.indices,
     ...TICKERS.br,
     ...TICKERS.us,
     ...TICKERS.etf,
+    ...TICKERS.fii,
   ];
 
   const BATCH = 6;
