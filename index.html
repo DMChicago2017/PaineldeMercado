@@ -424,13 +424,24 @@ footer a:hover { color: var(--accent); }
     <div class="macro-cell"><div class="label">Selic</div><div class="value" id="m-selic">—</div><div class="sub" id="m-selic-sub">BCB</div></div>
     <div class="macro-cell"><div class="label">CDI</div><div class="value" id="m-cdi">—</div><div class="sub" id="m-cdi-sub">BCB</div></div>
     <div class="macro-cell"><div class="label">IPCA 12m</div><div class="value" id="m-ipca">—</div><div class="sub" id="m-ipca-sub">BCB</div></div>
-    <div class="macro-cell"><div class="label">USD/BRL</div><div class="value" id="m-usdbrl">—</div><div class="sub" id="m-usdbrl-sub">—</div></div>
+    <div class="macro-cell"><div class="label">IGP-M 12m</div><div class="value" id="m-igpm">—</div><div class="sub" id="m-igpm-sub">BCB</div></div>
     <div class="macro-cell"><div class="label">Fed Funds</div><div class="value" id="m-fed">—</div><div class="sub" id="m-fed-sub">FFR proxy</div></div>
     <div class="macro-cell"><div class="label">CPI 12m</div><div class="value" id="m-cpi">—</div><div class="sub" id="m-cpi-sub">EUA</div></div>
     <div class="macro-cell"><div class="label">UST 10Y</div><div class="value" id="m-ust10">—</div><div class="sub" id="m-ust10-sub">Treasury</div></div>
     <div class="macro-cell"><div class="label">UST 2Y</div><div class="value" id="m-ust2">—</div><div class="sub" id="m-ust2-sub">Treasury</div></div>
-    <div class="macro-cell"><div class="label">IGP-M 12m</div><div class="value" id="m-igpm">—</div><div class="sub" id="m-igpm-sub">BCB</div></div>
-    <div class="macro-cell"><div class="label">EUR/BRL</div><div class="value" id="m-eurbrl">—</div><div class="sub" id="m-eurbrl-sub">—</div></div>
+  </div>
+</section>
+
+<section>
+  <div class="section-header">
+    <h2>Moedas</h2>
+    <span class="meta">Câmbio</span>
+  </div>
+  <div class="macro-grid">
+    <div class="macro-cell"><div class="label">USD/BRL Comercial</div><div class="value" id="m-usdbrl">—</div><div class="sub" id="m-usdbrl-sub">—</div></div>
+    <div class="macro-cell"><div class="label">EUR/BRL Comercial</div><div class="value" id="m-eurbrl">—</div><div class="sub" id="m-eurbrl-sub">—</div></div>
+    <div class="macro-cell"><div class="label">USD Turismo</div><div class="value" id="m-usdtur">—</div><div class="sub" id="m-usdtur-sub">—</div></div>
+    <div class="macro-cell"><div class="label">EUR Turismo</div><div class="value" id="m-eurtur">—</div><div class="sub" id="m-eurtur-sub">—</div></div>
   </div>
 </section>
 
@@ -534,6 +545,7 @@ const TICKERS = {
     { sym: 'XFIX11', name: 'IFIX (via ETF XFIX11)', yahoo: 'XFIX11.SA' },
     { sym: '^GSPC',  name: 'S&P 500',      yahoo: '^GSPC'  },
     { sym: '^IXIC',  name: 'Nasdaq Comp.', yahoo: '^IXIC'  },
+    { sym: '^NDX',   name: 'Nasdaq 100',   yahoo: '^NDX'   },
     { sym: '^DJI',   name: 'Dow Jones',    yahoo: '^DJI'   },
   ],
   br: [
@@ -862,6 +874,33 @@ async function loadCPI() {
   }
 }
 
+async function loadTourismRates() {
+  try {
+    const url = 'https://economia.awesomeapi.com.br/json/last/USD-BRL,EUR-BRL';
+    let data;
+    try { data = await fetchDirect(url); }
+    catch (e) { data = await fetchWithProxy(url); }
+
+    const usd = data?.USDBRL;
+    if (usd) {
+      const ask = parseFloat(usd.ask);
+      const pct = parseFloat(usd.pctChange);
+      document.getElementById('m-usdtur').textContent = 'R$ ' + fmt.num(ask, 4);
+      document.getElementById('m-usdtur-sub').innerHTML =
+        `<span class="${fmt.cls(pct)}">${fmt.pct(pct)} dia</span>`;
+    }
+
+    const eur = data?.EURBRL;
+    if (eur) {
+      const ask = parseFloat(eur.ask);
+      const pct = parseFloat(eur.pctChange);
+      document.getElementById('m-eurtur').textContent = 'R$ ' + fmt.num(ask, 4);
+      document.getElementById('m-eurtur-sub').innerHTML =
+        `<span class="${fmt.cls(pct)}">${fmt.pct(pct)} dia</span>`;
+    }
+  } catch (e) { console.warn('Tourism rates fail', e); }
+}
+
 async function loadAll() {
   const btn = document.getElementById('refresh-btn');
   btn.disabled = true;
@@ -876,6 +915,7 @@ async function loadAll() {
       loadAssets(),
       loadBCB(),
       loadMacroYahoo(),
+      loadTourismRates(),
     ]);
 
     const elapsed = ((Date.now() - start) / 1000).toFixed(1);
